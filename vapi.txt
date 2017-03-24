@@ -1,0 +1,299 @@
+ 
+==============================================================================
+Kimden : Sedat Kapanoglu
+Kime   : All
+Konu   : VAPI specs                                                            
+Tarih  : 07/08/1996 00:57
+OLR    : Wolverine v1.05
+==============================================================================
+All,
+ 
+VAPI (VANTILATOR API) 1.0 SPECS
+”””””””””””””””””””””””””””””””
+VAPI, PC'den vantilator kontrolu icin tasarlanmi$ standart bir programlama
+arabirimidir.
+ 
+1. HARDWARE SPECIFICATIONS
+””””””””””””””””””””””””””
+ 
+a) Vantilator
+-------------
+"Vantilator" kelimesi insani serinletmeye yarayan tum cihazlari
+kapsamaktadir (Klima, Hava Ufleyebilen Soba ve tabi Vantilator)...
+VAPI standardina uygun Vantilator'lerde bir seri port giri$i bulunur
+(RS232C)... Bilgisayara herhangi bir null-modem cable ile baglanabilir...
+ 
+b) Bilgisayar
+-------------
+Vantilatore direk bilgisayarin uzerindeki seri portlardan herhangi biriyle
+baglanabilir... UART olarak 8250 yeterlidir...
+ 
+Ileti$im komutlari:
+ 
+Vantilator ile bilgisayar arasindaki ileti$im 5 byte'lik VAPI Device
+Communcation  Packet'lar kullanilarak saglanir. Bu packet'larin formati
+$oyledir:
+ 
+VAPI Device Communcation Packets Structure:
+ 
+Size       Description
+””””       ”””””””””””
+BYTE       Command mnemonics
+             0 = NOP
+             1 = PLY
+             2 = STP
+             3 = EJT
+             4 = RPM
+             7 = ESC
+             8 = HGH
+             9 = AGH
+             A-FF = RES
+ 
+DWORD      Packet checksum
+ 
+Ileti$im kanali 8,N,1'dir ve 9600 baud hizindadir. Handshake protokolleri
+ignore edilir. Carrier ignore edilir.
+ 
+2. SOFTWARE SPECIFICATIONS
+””””””””””””””””””””””””””
+VAPI icin iki seviyeli bir API vardir: real mode api ve protected mode
+api... Real mode API direk BIOS'tan desteklenmektedir... Award BIOS'larin
+6/6/96 ve daha yeni tarihlilerinde icsel real mode VAPI destegi mevcuttur...
+AMI BIOS'larin VAPI destegi hatalidir ve olumle sonuclanan kazalara yol
+acabilmektedir.
+ 
+UYARI: Eger sisteminizde AMI HiFlex BIOS varsa kafanizi  vantilatorun
+hizasinda tutmayin! Ayrica vantilatorunuzu cocuklarin  eri$emeyecegi bir
+yerde saklayin. Vantilator buzdolabinda 3 ay tazelik ve  nefasetini
+korur.
+ 
+a) Real mode VAPI
+-----------------
+Real mode VAPI, $7E interrupt'inda bulunur. Eger bu interrupt kullanimdaysa
+API server otomatik olarak sirasiyla $7E, $7F, 0, 1, 2 ve 3 interrupt'larini
+dener (ve cogunlukla ba$arisiz olur)... Istemci program VAPI destegini
+ara$tirmak icin bu interrupt'lari  sirasiyla a$agidaki parametrelerle
+cagirmasi gerekir:
+ 
+giri$te registerlar:    AX=0000h   ; VAPI signature
+ 
+donu$te registerlar:    AX=0000h ise VAPI hafizada mevcut.
+ 
+Cogu durumda VAPI'nin install edilmedigini anlamak olanaksizdir... Boyle
+durumlarda istemci programin VAPI'ye ce$itli isteklerde bulunmasi ve
+sonuclari kontrol etmesi gerekir. Real mode VAPI'de istekler a$agidaki gibi
+yapilir:
+ 
+Fonksiyon 01 - Get Device List
+ 
+giri$te registerlar:   AH=01h
+ 
+donu$te registerlar:   AH=01h  (fonksiyon destekleniyor)
+                       ES:DI=device info block'a pointer
+ 
+bozulan registerlar: BP,DS
+ 
+device info block formati:
+ 
+Microsoft tarafindan hazirlanan VAPI Device Info Structure:
+ 
+Size          Description
+””””””””      ”””””””””””””
+WORD          Reserved (must be zero)
+WORD          Reserved
+DWORD         Reserved (must be zero)
+DWORD         Reserved (read only. do not change!)
+ASCIIZ        Reserved (reserved for internal use. do not change!)
+DWORD         seg:offs pointer to next device info block (will be reserved)
+ 
+Gelen device info'dan gerekli bilgiler okunduktan sonra her device icin Get
+Device Info fonksiyonu cagirilir:
+ 
+Fonksiyon 02 - Get Device Info
+ 
+giri$te registerlar: AH=02h
+                     ES:DI points to device info structure
+ 
+donu$te registerlar: AH=02h (i$lem ba$arili)
+                     SP=device flags
+ 
+bozulan registerlar: CR0,SP
+ 
+UYARI: Bu fonksiyon flag'leri SP registerinda dondurdugunden cagirmadan once
+SP register'ini bir yerde saklamayi unutmayiniz. Ornek bir program a$agida
+verilmi$tir:
+ 
+  PUSH SP
+  MOV AH,2
+  INT 3     ; VAPI interrupt
+  CALL 0    ; sistem daha ne kadar dayanacak test ediyoruz
+  REP STOSB ; eger bundan da kurtulursa her$ey okey
+  POP SP    ; SP'yi geri aliyoruz
+  RETF      ; gulluk gulistan
+ 
+Device flags:
+ 
+bit 0 - Device is a cooling device (ustte bahsedilenler)
+        Eger bu bit kapaliysa device'in sogutma degil isitma device'i oldugu
+        ortaya cikiyor.
+ 
+    1 - Device needs IOCTL calls.
+        Bu bit device'in Microsoft tarafindan yazildigi anlamina geliyor.
+        Borland programcilari ignore etsin.
+ 
+    2 - Device supports software EJECT.
+        Bu bit vantilatorlerde her zaman 0 degerini dondurur. Yine de
+        yazilimcilar EJECT komutu vermeden once device'in vantilator
+        olmadigindan emin olmak durumundadirlar.
+ 
+    3-14 - reserved (must be zero)
+ 
+    15 - Device is little endian.
+        Bu device'in Intel LSB MSB notation'i kullandigini gosteriyor.
+        Motorola i$lemcili Vantilator'lerde high-low swappingi gerekebilir.
+ 
+Device hakkinda bilgileri aldiktan sonra artik device'a komut gondermeye
+ba$layabiliriz:
+ 
+Fonksiyon 03 - Send Command to Device
+ 
+giri$te registerlar:  AH=03h
+                      AL=komut kodu:
+ 
+                         00 - play device
+                         01 - stop device
+                         02 - eject device (!UYARI! kismini okuyun)
+                         03 - adjust RPM (sadece vantilatorler icin gecerli)
+                              BX=1000000/RPM (ornek: 2600 RPM icin 384)
+                         04 - adjust temperature
+                              BX=sicaklik
+                              CX=tahmini oda sicakligi
+                              DX=ikisinin toplami (checksum)
+ 
+donu$te registerlar:  AH=03h ; fonksiyon destekleniyor
+ 
+                      AL=hata kodu:
+                         00 - hata yok, komut ba$arili
+                         01 - bilinmeyen komut
+                         02 - komut device tarafindan desteklenmiyor
+                         03 - eject kontrolden cikti
+                         04 - bilinmeyen hata (sadece Macintosh)
+                         05-FF - OEM specific error codes
+                      CX:DX=gunun tarihi (MSDOS format)
+                      BX=sistemdeki disket surucu sayisi
+ 
+bozulan registerlar: DS,CS,IP
+ 
+UYARI: Bu fonksiyon'un size geri donmesini saglamak icin a$agidaki gibi bir
+kod kullanacaksiniz:
+ 
+GetIntVec(3,myvec);
+myvec^[$45f] := $90;   ‡ VAPI server kodunu patch ediyoruz §
+myvec^[$460] := $90;
+myvec^[$5A8] := donu$ adresi;
+ 
+Bu koddan sonra VAPI'yi cagirdiginizda CS ve IP registerlari duzgun
+degerleri koruyacaktir.
+ 
+ 
+b) Protected Mode API
+---------------------
+Real mode'a benzer bir arabirim kullanilan Protected Mode API'de kullanim
+cok basittir... Oncelikle protected mode'a gecmeden evvel Real mode VAPI
+cagirilir ve buradan Protected mode VAPI address aranir:
+ 
+Fonksiyon 04 - Get Protected Mode Entry Point
+ 
+giri$te registerlar:  AH=04h
+ 
+donu$te registerlar:  AH=04h (fonksiyon destekleniyor)
+                      ES:DI  (protected mode entry point)
+ 
+bozulan registerlar: AX,BX,CX,DX,DS,ES,BP,SI,DI,FS,GS,CR0,DR0,Flags
+ 
+Buradan ogrenilen real mode address protected mode'a gecerken IDT uzerinden
+INT $7E'ye atanir. Eger INT 7e kullanimdaysa sirasiyla 7f, 0, 1, 2 ve 3
+denenmelidir.
+ 
+Interrupt'larin cagirilmasi Real mode API ile aynidir. Fakat real mode
+API'de bozulan CR0 register'lari protected mode API'de bozulmamaktadir. API
+onun yerine DS:0'in gosterdigi bolgeyi scratch area olarak kullanmaktadir.
+ 
+ 
+3. PROGRAMMING CONSIDERATIONS
+”””””””””””””””””””””””””””””
+ - VAPI'ye recursive call'lar yapmayiniz.
+ - VAPI'ye interrupt icinden call yapmayiniz. Eger interrupt icinden call
+   yapmaniz gerekirse $oyle bir kod kullanin:
+ 
+   CLI
+   INT 3
+   STI
+ 
+ - VAPI'ye call yaparken carry flag'i mutlaka SET konumunda olmalidir. Eger
+   carry flag'i unset ise VAPI bunu "unlink and self-destruct all devices"
+   komutu olarak algilar. Guvenlik olarak $oyle bir macro tanimlayin:
+ 
+   VAPI  macro
+         clc
+         int 3
+   VAPI  endm
+ 
+ - VAPI'yi iki cagiri$iniz arasindaki zaman en az 1 ms en fazla 3 ms
+   olmalidir. Eger VAPI'yi 3 ms icinde tekrar cagirmazsaniz VAPI idle
+   konumda oldugunu du$unup sistemi power saving moduna gecirecektir. Bunu
+   da a$agidaki kodla cozebilirsiniz:
+ 
+   GetIntVec(8,oldint8); ‡interrupt handler§
+   SetIntVec(8,žmyint8);
+ 
+   procedure myint8;interrupt;
+   begin
+     VAPI;
+     asm pushf end;
+     oldint8;
+   end;
+ 
+   Boylece saniyenin 18.2'sinde bir VAPI cagirilacak ve sistem
+   gocmeyecektir.
+ 
+   (NOT: 3 ms tabii ki saniyenin 18.2'sinde birden uzundur. Bundan dolayi
+   a$agidaki DEBUG script ile timer interval'i 1 ms granularity'ye
+   du$urmeniz gerekiyor:
+ 
+   -o 40 0
+   -o 40 0
+ 
+   Bundan sonra duzgun cali$masi gerek)
+ 
+   Veya alternatif cozum olarak sistemde APM yukluyse "Disable APM"
+   komutuyla da bu i$i halledebilirsiniz.
+ 
+ - Multitasking ortamlarda ayni anda iki task'ten VAPI'nin cagirilmamasi
+   gerekmektedir. Eger boyle bir durum zorunluysa her task icin iki ayri
+   VAPI driver'i yuklenmesi gerekmektedir.
+ 
+ - VAPI'yi OS/2 DOS Box'ta cagirmadan once OS/2'nin disabled durumda olmasi
+   gerekmektedir. Bunun icin OS/2 DOS Backdoor'unun "start critical section"
+   ve "end critical section" function'larini kullanabilirsiniz.
+ 
+ - VAPI driver'ini yuklemeden once, hard diske yazmayi engelleyici bir TSR
+   yuklemeyi unutmayin. HDLOCK gibi bir program i$inizi gorur. Win95 direk
+   disk eri$imin engellediginden Win95 altinda yuklemenize gerek yoktur.
+ 
+CONTRIBUTORS
+””””””””””””
+Sedat Kapanoglu  - (Kapanoglu International Software Systems)
+Harun Arabulan   - (SuperTV Broadcasting & Corporation)
+Necdet Yumurtaci - (Capa Rubber Engineering and Reproduction Ltd)
+Meric $entunali  - (Arapoglu Production & Reporduction Inc)
+ 
+END OF VAPI 1.0 SPECIFICATIONS REFERENCE MANUAL
+ 
+retroactive,
+ 
+SSG
+ 
+... "ORTODONTAL TEDAVIYE HAYIR!" -Wolverine
+--- Wolverine v1.05 [REG]
+ 

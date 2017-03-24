@@ -1,0 +1,577 @@
+<html>
+<head>
+<title>arteffect</title>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+<!-- imageready preload script (arteffect.psd) -->
+<script language="javascript">
+<!--
+
+function newimage(arg) {
+	if (document.images) {
+		rslt = new image();
+		rslt.src = arg;
+		return rslt;
+	}
+}
+
+function changeimages() {
+	if (document.images && (preloadflag == true)) {
+		for (var i=0; i<changeimages.arguments.length; i+=2) {
+			document[changeimages.arguments[i]].src = changeimages.arguments[i+1];
+		}
+	}
+}
+
+var preloadflag = false;
+function preloadimages() {
+	if (document.images) {
+		index_05_home_over = newimage("images/index_05-home_over.jpg");
+		border2_releases_over = newimage("images/border2-releases_over.jpg");
+		border2_members_over = newimage("images/border2-members_over.jpg");
+		index_09_members_over = newimage("images/index_09-members_over.jpg");
+		home_about_over = newimage("images/home-about_over.jpg");
+		home_over = newimage("images/home-over.jpg");
+		about_members_over = newimage("images/about-members_over.jpg");
+		about_over = newimage("images/about-over.jpg");
+		about_home_over = newimage("images/about-home_over.jpg");
+		members_releases_over = newimage("images/members-releases_over.jpg");
+		members_over = newimage("images/members-over.jpg");
+		members_about_over = newimage("images/members-about_over.jpg");
+		releases_links_over = newimage("images/releases-links_over.jpg");
+		releases_over = newimage("images/releases-over.jpg");
+		releases_members_over = newimage("images/releases-members_over.jpg");
+		links_archive_over = newimage("images/links-archive_over.jpg");
+		links_over = newimage("images/links-over.jpg");
+		links_releases_over = newimage("images/links-releases_over.jpg");
+		archive_over = newimage("images/archive-over.jpg");
+		archive_links_over = newimage("images/archive-links_over.jpg");
+		logo2_archive_over = newimage("images/logo2-archive_over.jpg");
+		preloadflag = true;
+	}
+}
+
+// -->
+</script>
+<!-- end preload script -->
+</head>
+<body bgcolor=#dce9fa onload="preloadimages();" leftmargin="0" topmargin="0">
+<!-- imageready slices (arteffect.psd) -->
+<div id="layer1" style="position:absolute; left:181px; top:157px; width:522px; height:463px; z-index:1"><u>VAPI 
+  (VANTILATOR API) 1.0 SPECS</u> 
+  <p>VAPI, PC'den vantilator kontrolu icin tasarlanmi$ standart bir programlama 
+    arabirimidir.<br>
+    <br>
+    <u>1. HARDWARE SPECIFICATIONS</u><br>
+    <br>
+    <u>a) Vantilator</u><br>
+  <p>"Vantilator" kelimesi insani serinletmeye yarayan tum cihazlari kapsamaktadir 
+    (Klima, Hava Ufleyebilen Soba ve tabi Vantilator)... VAPI standardina uygun 
+    Vantilator'lerde bir seri port giri$i bulunur (RS232C)... Bilgisayara herhangi 
+    bir null-modem cable ile baglanabilir... <br>
+    <br>
+    <u>b) Bilgisayar</u><br>
+  <p>Vantilatore direk bilgisayarin uzerindeki seri portlardan herhangi biriyle 
+    baglanabilir... UART olarak 8250 yeterlidir... <br>
+    <br>
+    Ileti$im komutlari:<br>
+  <p>Vantilator ile bilgisayar arasindaki ileti$im 5 byte'lik VAPI Device Communcation 
+    Packet'lar kullanilarak saglanir. Bu packet'larin formati $oyledir:<br>
+    <br>
+    VAPI Device Communcation Packets Structure: 
+  <tt> 
+  <table>
+    <tr>
+      <th>Size</th>
+      <th>Description</th>
+    </tr>
+    <tr valign=top>
+      <td>BYTE</td>
+      <td nowrap>Command mnemonics<br>
+        0 = NOP<br>
+        1 = PLY<br>
+        2 = STP<br>
+        3 = EJT<br>
+        4 = RPM<br>
+        7 = ESC<br>
+        8 = HGH<br>
+        9 = AGH<br>
+        A-FF = RES</td>
+    </tr>
+    <tr valign=top>
+      <td>DWORD</td>
+      <td nowrap>Packet checksum</td>
+    </tr>
+  </table>
+  </tt> 
+  <p>Ileti$im kanali 8,N,1'dir ve 9600 baud hizindadir. Handshake protokolleri 
+    ignore edilir. Carrier ignore edilir.<br>
+    <br>
+    <u>2. SOFTWARE SPECIFICATIONS</u><br>
+  <p>VAPI icin iki seviyeli bir API vardir: real mode api ve protected mode api... 
+    Real mode API direk BIOS'tan desteklenmektedir... Award BIOS'larin 6/6/96 
+    ve daha yeni tarihlilerinde icsel real mode VAPI destegi mevcuttur... AMI 
+    BIOS'larin VAPI destegi hatalidir ve olumle sonuclanan kazalara yol acabilmektedir.<br>
+  <p><b>UYARI</b>: Eger sisteminizde AMI HiFlex BIOS varsa kafanizi vantilatorun 
+    hizasinda tutmayin! Ayrica vantilatorunuzu cocuklarin eri$emeyecegi bir yerde 
+    saklayin. Vantilator buzdolabinda 3 ay tazelik ve nefasetini korur.<br>
+    <br>
+    <u>a) Real mode VAPI</u><br>
+  <p>Real mode VAPI, $7E interrupt'inda bulunur. Eger bu interrupt kullanimdaysa 
+    API server otomatik olarak sirasiyla $7E, $7F, 0, 1, 2 ve 3 interrupt'larini 
+    dener (ve cogunlukla ba$arisiz olur)... Istemci program VAPI destegini ara$tirmak 
+    icin bu interrupt'lari sirasiyla a$agidaki parametrelerle cagirmasi gerekir:<br>
+    <br>
+  <tt> 
+  <table>
+    <tr valign=top>
+      <td>giri$te registerlar:</td>
+      <td>AX=0000h ; VAPI signature
+    </tr>
+    <tr valign=top>
+      <td>donu$te registerlar:</td>
+      <td>AX=0000h ise VAPI hafizada mevcut.</td>
+    </tr>
+  </table>
+  </tt> 
+  <p>Cogu durumda VAPI'nin install edilmedigini anlamak olanaksizdir... Boyle 
+    durumlarda istemci programin VAPI'ye ce$itli isteklerde bulunmasi ve sonuclari 
+    kontrol etmesi gerekir. Real mode VAPI'de istekler a$agidaki gibi yapilir:<br>
+    <br>
+    Fonksiyon 01 - Get Device List<br>
+    <br>
+  <tt> 
+  <table>
+    <tr valign=top>
+      <td>giri$te registerlar:</td>
+      <td>AH=01h</td>
+    </tr>
+    <tr valign=top>
+      <td>donu$te registerlar:</td>
+      <td>AH=01h (fonksiyon destekleniyor)</td>
+    </tr>
+    <tr valign=top>
+      <td></td>
+      <td>ES:DI=device info block'a pointer</td>
+    </tr>
+    <tr valign=top>
+      <td>bozulan registerlar:</td>
+      <td>BP,DS</td>
+    </tr>
+  </table>
+  </tt> <br>
+  device info block formati:<br>
+  <br>
+  Microsoft tarafindan hazirlanan VAPI Device Info Structure:<br>
+  <tt> 
+  <table>
+    <tr valign=top>
+      <th>Size</th>
+      <th>Description</th>
+    </tr>
+    <tr valign=top>
+      <td>WORD</td>
+      <td>Reserved (must be zero)</td>
+    </tr>
+    <tr valign=top>
+      <td>WORD</td>
+      <td>Reserved</td>
+    </tr>
+    <tr valign=top>
+      <td>DWORD</td>
+      <td>Reserved (must be zero)</td>
+    </tr>
+    <tr valign=top>
+      <td>DWORD</td>
+      <td>Reserved (read only. do not change!)</td>
+    </tr>
+    <tr valign=top>
+      <td>ASCIIZ</td>
+      <td>Reserved (reserved for internal use. do not change!)</td>
+    </tr>
+    <tr valign=top>
+      <td>DWORD</td>
+      <td>seg:offs pointer to next device info block (will be reserved)</td>
+    </tr>
+  </table>
+  </tt> 
+  <p>Gelen device info'dan gerekli bilgiler okunduktan sonra her device icin Get 
+    Device Info fonksiyonu cagirilir:<br>
+    <br>
+    Fonksiyon 02 - Get Device Info<br>
+    <br>
+  <tt> 
+  <table>
+    <tr valign=top>
+      <td>giri$te registerlar:</td>
+      <td>AH=02h</td>
+    </tr>
+    <tr valign=top>
+      <td></td>
+      <td>ES:DI points to device info structure</td>
+    </tr>
+    <tr valign=top>
+      <td>donu$te registerlar:</td>
+      <td> AH=02h (i$lem ba$arili)</td>
+    </tr>
+    <tr valign=top>
+      <td></td>
+      <td>SP=device flags</td>
+    </tr>
+    <tr valign=top>
+      <td>bozulan registerlar:</td>
+      <td> CR0,SP</td>
+    </tr>
+  </table>
+  </tt> 
+  <p>UYARI: Bu fonksiyon flag'leri SP registerinda dondurdugunden cagirmadan once 
+    SP register'ini bir yerde saklamayi unutmayiniz. Ornek bir program a$agida 
+    verilmi$tir:<br>
+    <br>
+  <pre>
+  PUSH SP
+  MOV AH,2
+  INT 3     ; VAPI interrupt
+  CALL 0    ; sistem daha ne kadar dayanacak test ediyoruz
+  REP STOSB ; eger bundan da kurtulursa her$ey okey
+  POP SP    ; SP'yi geri aliyoruz
+  RETF      ; gulluk gulistan
+</pre>
+  <br>
+  <br>
+  Device flags:<br>
+  <br>
+  <pre>
+bit 0 - Device is a cooling device (ustte bahsedilenler)
+        Eger bu bit kapaliysa device'in sogutma degil isitma device'i oldugu
+        ortaya cikiyor.
+
+    1 - Device needs IOCTL calls.
+        Bu bit device'in Microsoft tarafindan yazildigi anlamina geliyor.
+        Borland programcilari ignore etsin.
+
+    2 - Device supports software EJECT.
+        Bu bit vantilatorlerde her zaman 0 degerini dondurur. Yine de
+        yazilimcilar EJECT komutu vermeden once device'in vantilator
+        olmadigindan emin olmak durumundadirlar.
+
+    3-14 - reserved (must be zero)
+
+    15 - Device is little endian.
+        Bu device'in Intel LSB MSB notation'i kullandigini gosteriyor.
+        Motorola i$lemcili Vantilator'lerde high-low swappingi gerekebilir.
+</pre>
+   <br>
+  <p>Device hakkinda bilgileri aldiktan sonra artik device'a komut gondermeye 
+    ba$layabiliriz:<br>
+    <br>
+    Fonksiyon 03 - Send Command to Device<br>
+    <br>
+  <tt> 
+  <table>
+    <tr valign=top>
+      <td>giri$te registerlar:</td>
+      <td> AH=03h<br>
+        AL=komut kodu:<br>
+        <table>
+          <tr>
+            <td>00</td>
+            <td> - play device</td>
+          </tr>
+          <tr>
+            <td>01</td>
+            <td> - stop device</td>
+          </tr>
+          <tr valign=top>
+            <td>02</td>
+            <td> - eject device (!UYARI! kismini okuyun)</td>
+          </tr>
+          <tr valign=top>
+            <td>03</td>
+            <td> - adjust RPM (sadece vantilatorler icin gecerli)<br>
+              BX=1000000/RPM (ornek: 2600 RPM icin 384)</td>
+          </tr>
+          <tr valign=top>
+            <td>04</td>
+            <td> - adjust temperature<br>
+              BX=sicaklik<br>
+              CX=tahmini oda sicakligi<br>
+              DX=ikisinin toplami (checksum)</td>
+          </tr>
+        </table>
+         </td>
+    </tr>
+    <tr valign=top>
+      <td>donu$te registerlar:</td>
+      <td> AH=03h ; fonksiyon destekleniyor<br>
+        AL=hata kodu:<br>
+         
+        <table>
+          <tr valign=top>
+            <td>00</td>
+            <td> - hata yok, komut ba$arili</td>
+          </tr>
+          <tr valign=top>
+            <td>01</td>
+            <td> - bilinmeyen komut</td>
+          </tr>
+          <tr valign=top>
+            <td>02</td>
+            <td> - komut device tarafindan desteklenmiyor</td>
+          </tr>
+          <tr valign=top>
+            <td>03</td>
+            <td> - eject kontrolden cikti</td>
+          </tr>
+          <tr valign=top>
+            <td>04</td>
+            <td> - bilinmeyen hata (sadece Macintosh)</td>
+          </tr>
+          <tr valign=top>
+            <td>05-FF</td>
+            <td> - OEM specific error codes</td>
+          </tr>
+          CX:DX=gunun tarihi (MSDOS format)<br>
+          BX=sistemdeki disket surucu sayisi<br>
+           
+        </table>
+      </td>
+    </tr>
+  </table>
+  <tr valign=top>
+    <td>bozulan registerlar:</td>
+    <td> DS,CS,IP</td>
+  </tr>
+   </tt> 
+  <p>UYARI: Bu fonksiyon'un size geri donmesini saglamak icin a$agidaki gibi bir 
+    kod kullanacaksiniz:<br>
+    <br>
+  <pre>
+GetIntVec(3,myvec);
+myvec^[$45f] := $90;   ‡ VAPI server kodunu patch ediyoruz §
+myvec^[$460] := $90;
+myvec^[$5A8] := donu$ adresi;
+</pre>
+  <p>Bu koddan sonra VAPI'yi cagirdiginizda CS ve IP registerlari duzgun degerleri 
+    koruyacaktir.<br>
+    <br>
+    <u>b) Protected Mode API</u><br>
+  <p>Real mode'a benzer bir arabirim kullanilan Protected Mode API'de kullanim 
+    cok basittir... Oncelikle protected mode'a gecmeden evvel Real mode VAPI cagirilir 
+    ve buradan Protected mode VAPI address aranir:<br>
+    <br>
+    Fonksiyon 04 - Get Protected Mode Entry Point 
+  <tt> 
+  <table>
+    <tr valign=top>
+      <td>giri$te registerlar: </td>
+      <td>AH=04h</td>
+    </tr>
+    <tr valign=top>
+      <td>donu$te registerlar:</td>
+      <td>AH=04h (fonksiyon destekleniyor)<br>
+        ES:DI (protected mode entry point)</td>
+    </tr>
+    <tr valign=top>
+      <td>bozulan registerlar:</td>
+      <td> AX,BX,CX,DX,DS,ES,BP,SI,DI,FS,GS,CR0,DR0,Flags</td>
+    </tr>
+  </table>
+  </tt> 
+  <p>Buradan ogrenilen real mode address protected mode'a gecerken IDT uzerinden 
+    INT $7E'ye atanir. Eger INT 7e kullanimdaysa sirasiyla 7f, 0, 1, 2 ve 3 denenmelidir.<br>
+  <p>Interrupt'larin cagirilmasi Real mode API ile aynidir. Fakat real mode API'de 
+    bozulan CR0 register'lari protected mode API'de bozulmamaktadir. API onun 
+    yerine DS:0'in gosterdigi bolgeyi scratch area olarak kullanmaktadir.<br>
+    <br>
+    <u>3. PROGRAMMING CONSIDERATIONS</u><br>
+    <br>
+  <ul>
+    <li>VAPI'ye recursive call'lar yapmayiniz. 
+    <li>VAPI'ye interrupt icinden call yapmayiniz. Eger interrupt icinden call 
+      yapmaniz gerekirse $oyle bir kod kullanin:<br>
+      <pre>
+   CLI
+   INT 3
+   STI
+</pre>
+    <li>VAPI'ye call yaparken carry flag'i mutlaka SET konumunda olmalidir. Eger 
+      carry flag'i unset ise VAPI bunu "unlink and self-destruct all devices" 
+      komutu olarak algilar. Guvenlik olarak $oyle bir macro tanimlayin:<br>
+      <pre>
+   VAPI  macro
+         clc
+         int 3
+   VAPI  endm
+</pre>
+    <li>VAPI'yi iki cagiri$iniz arasindaki zaman en az 1 ms en fazla 3 ms olmalidir. 
+      Eger VAPI'yi 3 ms icinde tekrar cagirmazsaniz VAPI idle konumda oldugunu 
+      du$unup sistemi power saving moduna gecirecektir. Bunu da a$agidaki kodla 
+      cozebilirsiniz:<br>
+      <pre>
+   GetIntVec(8,oldint8); ‡interrupt handler§
+   SetIntVec(8,žmyint8);
+
+   procedure myint8;interrupt;
+   begin
+     VAPI;
+     asm pushf end;
+     oldint8;
+   end;
+</pre>
+      <p>Boylece saniyenin 18.2'sinde bir VAPI cagirilacak ve sistem gocmeyecektir.<br>
+      <p>(NOT: 3 ms tabii ki saniyenin 18.2'sinde birden uzundur. Bundan dolayi 
+        a$agidaki DEBUG script ile timer interval'i 1 ms granularity'ye du$urmeniz 
+        gerekiyor:<br>
+      <pre>
+   -o 40 0
+   -o 40 0
+</pre>
+      <p>Bundan sonra duzgun cali$masi gerek)<br>
+      <p>Veya alternatif cozum olarak sistemde APM yukluyse "Disable APM" komutuyla 
+        da bu i$i halledebilirsiniz. 
+    <li>Multitasking ortamlarda ayni anda iki task'ten VAPI'nin cagirilmamasi 
+      gerekmektedir. Eger boyle bir durum zorunluysa her task icin iki ayri VAPI 
+      driver'i yuklenmesi gerekmektedir. 
+    <li>VAPI'yi OS/2 DOS Box'ta cagirmadan once OS/2'nin disabled durumda olmasi 
+      gerekmektedir. Bunun icin OS/2 DOS Backdoor'unun "start critical section" 
+      ve "end critical section" function'larini kullanabilirsiniz. 
+    <li>VAPI driver'ini yuklemeden once, hard diske yazmayi engelleyici bir TSR 
+      yuklemeyi unutmayin. HDLOCK gibi bir program i$inizi gorur. Win95 direk 
+      disk eri$imin engellediginden Win95 altinda yuklemenize gerek yoktur. 
+  </ul>
+  <br>
+  <u>CONTRIBUTORS</u><br>
+  <br>
+  <ul>
+    <li>Sedat Kapanoglu - (Kapanoglu International Software Systems) 
+    <li>Harun Arabulan - (SuperTV Broadcasting & Corporation) 
+    <li>Necdet Yumurtaci - (Capa Rubber Engineering and Reproduction Ltd) 
+    <li>Meric $entunali - (Arapoglu Production & Reporduction Inc) 
+  </ul>
+  <br>
+  <br>
+  <center>
+    END OF VAPI 1.0 SPECIFICATIONS REFERENCE MANUAL
+  </center>
+
+</div>
+<table width=800 border=0 cellpadding=0 cellspacing=0>
+	<tr>
+		<td>
+			<img src="images/spacer.gif" width=27 height=1></td>
+		<td>
+			<img src="images/spacer.gif" width=125 height=1></td>
+		<td>
+			<img src="images/spacer.gif" width=19 height=1></td>
+		<td>
+			<img src="images/spacer.gif" width=79 height=1></td>
+		<td>
+			<img src="images/spacer.gif" width=453 height=1></td>
+		<td>
+			<img src="images/spacer.gif" width=97 height=1></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td colspan=5 bgcolor=#dce9fa>
+			<img src="images/index_01.jpg" width=703 height=24></td>
+		
+    <td rowspan=12 bgcolor=#dce9fa>&nbsp; </td>
+		<td>
+			<img src="images/spacer.gif" width=1 height=24></td>
+	</tr>
+	<tr>
+		<td colspan=4 bgcolor=#dce9fa>
+			<img src="images/logo1.jpg" width=250 height=102></td>
+		<td bgcolor=#dce9fa>
+			<img src="images/elite-fools.jpg" width=453 height=102></td>
+		<td>
+			<img src="images/spacer.gif" width=1 height=102></td>
+	</tr>
+	<tr>
+		<td colspan=2 rowspan=2 bgcolor=#dce9fa>
+			<img name="index_05" src="images/index_05.jpg" width=152 height=30></td>
+		<td rowspan=9 bgcolor=#dce9fa>
+			<img name="border2" src="images/border2.jpg" width=19 height=338></td>
+		<td colspan=2 bgcolor=#dce9fa>
+			<img src="images/border1.jpg" width=532 height=12></td>
+		<td>
+			<img src="images/spacer.gif" width=1 height=12></td>
+	</tr>
+	<tr>
+		
+    <td colspan=2 rowspan=9>&nbsp; </td>
+		<td>
+			<img src="images/spacer.gif" width=1 height=18></td>
+	</tr>
+	<tr>
+		<td rowspan=7 bgcolor=#dce9fa>
+			<img name="index_09" src="images/index_09.jpg" width=27 height=308></td>
+		
+    <td bgcolor=#dce9fa> <a href="index.html"
+				onmouseover="changeimages('index_05', 'images/index_05-home_over.jpg', 'home', 'images/home-over.jpg', 'about', 'images/about-home_over.jpg'); return true;"
+				onmouseout="changeimages('index_05', 'images/index_05.jpg', 'home', 'images/home.jpg', 'about', 'images/about.jpg'); return true;"> 
+      <img name="home" src="images/home.jpg" width=125 height=37 border=0></a></td>
+		<td>
+			<img src="images/spacer.gif" width=1 height=37></td>
+	</tr>
+	<tr>
+		
+    <td bgcolor=#dce9fa> <a href="about.html"
+				onmouseover="changeimages('home', 'images/home-about_over.jpg', 'about', 'images/about-over.jpg', 'members', 'images/members-about_over.jpg'); return true;"
+				onmouseout="changeimages('home', 'images/home.jpg', 'about', 'images/about.jpg', 'members', 'images/members.jpg'); return true;"> 
+      <img name="about" src="images/about.jpg" width=125 height=36 border=0></a></td>
+		<td>
+			<img src="images/spacer.gif" width=1 height=36></td>
+	</tr>
+	<tr>
+		
+    <td bgcolor=#dce9fa> <a href="membaz.html"
+				onmouseover="changeimages('border2', 'images/border2-members_over.jpg', 'index_09', 'images/index_09-members_over.jpg', 'about', 'images/about-members_over.jpg', 'members', 'images/members-over.jpg', 'releases', 'images/releases-members_over.jpg'); return true;"
+				onmouseout="changeimages('border2', 'images/border2.jpg', 'index_09', 'images/index_09.jpg', 'about', 'images/about.jpg', 'members', 'images/members.jpg', 'releases', 'images/releases.jpg'); return true;"> 
+      <img name="members" src="images/members.jpg" width=125 height=38 border=0></a></td>
+		<td>
+			<img src="images/spacer.gif" width=1 height=38></td>
+	</tr>
+	<tr>
+		
+    <td bgcolor=#dce9fa> <a href="rels.html"
+				onmouseover="changeimages('border2', 'images/border2-releases_over.jpg', 'members', 'images/members-releases_over.jpg', 'releases', 'images/releases-over.jpg', 'links', 'images/links-releases_over.jpg'); return true;"
+				onmouseout="changeimages('border2', 'images/border2.jpg', 'members', 'images/members.jpg', 'releases', 'images/releases.jpg', 'links', 'images/links.jpg'); return true;"> 
+      <img name="releases" src="images/releases.jpg" width=125 height=37 border=0></a></td>
+		<td>
+			<img src="images/spacer.gif" width=1 height=37></td>
+	</tr>
+	<tr>
+		
+    <td bgcolor=#dce9fa> <a href="links.html"
+				onmouseover="changeimages('releases', 'images/releases-links_over.jpg', 'links', 'images/links-over.jpg', 'archive', 'images/archive-links_over.jpg'); return true;"
+				onmouseout="changeimages('releases', 'images/releases.jpg', 'links', 'images/links.jpg', 'archive', 'images/archive.jpg'); return true;"> 
+      <img name="links" src="images/links.jpg" width=125 height=36 border=0></a></td>
+		<td>
+			<img src="images/spacer.gif" width=1 height=36></td>
+	</tr>
+	<tr>
+		
+    <td bgcolor=#dce9fa> <a href="archive.html"
+				onmouseover="changeimages('links', 'images/links-archive_over.jpg', 'archive', 'images/archive-over.jpg', 'logo2', 'images/logo2-archive_over.jpg'); return true;"
+				onmouseout="changeimages('links', 'images/links.jpg', 'archive', 'images/archive.jpg', 'logo2', 'images/logo2.jpg'); return true;"> 
+      <img name="archive" src="images/archive.jpg" width=125 height=35 border=0></a></td>
+		<td>
+			<img src="images/spacer.gif" width=1 height=35></td>
+	</tr>
+	<tr>
+		<td bgcolor=#dce9fa>
+			<img name="logo2" src="images/logo2.jpg" width=125 height=89></td>
+		<td>
+			<img src="images/spacer.gif" width=1 height=89></td>
+	</tr>
+	<tr>
+		<td colspan=3 bgcolor=#dce9fa>
+			<img src="images/index_17.jpg" width=171 height=136></td>
+		<td>
+			<img src="images/spacer.gif" width=1 height=136></td>
+	</tr>
+</table>
+<!-- end imageready slices -->
+</body>
+</html>
